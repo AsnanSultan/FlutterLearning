@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_application_with_git/core/store.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -13,7 +12,7 @@ import 'package:flutter_application_with_git/utils/routes.dart';
 import 'package:flutter_application_with_git/utils/theme.dart';
 
 import 'addToCart_widget.dart';
-//import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,13 +20,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final url = "https://api.jsonbin.io/b/604dbddb683e7e079c4eefd3";
+
   void initState() {
     super.initState();
     loadData();
   }
 
   void loadData() async {
-    var catalogJson = await rootBundle.loadString("assets/files/catalog.json");
+    // var catalogJson = await rootBundle.loadString("assets/files/catalog.json");
+    var response = await http.get(Uri.parse(url));
+    var catalogJson = response.body;
     var decodedData = jsonDecode(catalogJson);
     var prodectData = decodedData["products"];
     CatalogModel.items =
@@ -52,7 +55,7 @@ class _HomePageState extends State<HomePage> {
               color: Colors.white,
             ),
           ).badge(
-              color: Vx.red500,
+              color: Vx.gray200,
               size: 22,
               count: _cart.items.length,
               textStyle: TextStyle(
@@ -68,12 +71,10 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CatalogHeader(),
-                if (CatalogModel.items.length > 1)
+                if (CatalogModel.items.isNotEmpty)
                   CatalogList().py16().expand()
                 else
-                  Center(
-                    child: CircularProgressIndicator().expand(),
-                  )
+                  CircularProgressIndicator().centered().expand()
               ],
             ),
           ),
@@ -101,22 +102,41 @@ class CatalogList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: CatalogModel.items.length,
-      itemBuilder: (context, index) {
-        final catalog = CatalogModel.items[index];
-        return InkWell(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomeDeatils(catalog: catalog),
-            ),
-          ),
-          child: CatalogItem(catalog: catalog),
-        );
-      },
-    );
+    return !context.isMobile
+        ? GridView.builder(
+            gridDelegate:
+                SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+            shrinkWrap: true,
+            itemCount: CatalogModel.items.length,
+            itemBuilder: (context, index) {
+              final catalog = CatalogModel.items[index];
+              return InkWell(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomeDeatils(catalog: catalog),
+                  ),
+                ),
+                child: CatalogItem(catalog: catalog),
+              );
+            },
+          )
+        : ListView.builder(
+            shrinkWrap: true,
+            itemCount: CatalogModel.items.length,
+            itemBuilder: (context, index) {
+              final catalog = CatalogModel.items[index];
+              return InkWell(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomeDeatils(catalog: catalog),
+                  ),
+                ),
+                child: CatalogItem(catalog: catalog),
+              );
+            },
+          );
   }
 }
 
