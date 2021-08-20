@@ -8,8 +8,10 @@ class CartModel {
 
   final List<int> _itemIds = [];
 
+  // ignore: unnecessary_getters_setters
   CatalogModel get catalog => _catalog;
 
+  // ignore: unnecessary_getters_setters
   set catalog(CatalogModel newCatalog) {
     _catalog = newCatalog;
   }

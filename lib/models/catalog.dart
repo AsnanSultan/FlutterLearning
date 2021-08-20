@@ -1,5 +1,5 @@
 class CatalogModel {
-  static late List<Item> items;
+  static late List<Item> items = [];
 
   Item getById(int id) =>
       items.firstWhere((element) => element.id == id, orElse: null);
